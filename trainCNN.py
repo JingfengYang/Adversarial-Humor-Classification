@@ -29,8 +29,19 @@ class Encoder(nn.Module):
         self.dropout = nn.Dropout(dropout_p)
         self.fc1 = nn.Linear(len(filter_sizes) * num_filters, 1)
 
-    def forward(self,input,input_len,train=True):
+    def forward(self,input,input_len,train=True):#round=0
+        #Normalize dictionary
         x = self.embedding(input)
+        #if round==0
+        x = x.unsqueeze(1)
+        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]
+        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
+        x = torch.cat(x, 1)
+        if train:
+            x = self.dropout(x)
+        logit = self.fc1(x).squeeze(1)
+        #if round==1
+        #x = x + x.grad*epl
         x = x.unsqueeze(1)
         x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]
         x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
@@ -73,13 +84,18 @@ class SimpleLossCompute:
     def __init__(self,  opt=None):
         self.opt = opt
 
-    def __call__(self, x, y, norm,train=True):
+    def __call__(self, x, y, norm,train=True):#grad = false
+
         loss = F.binary_cross_entropy(torch.sigmoid(x),y.float())
         if train:
+            #self.opt.optimizer.zero_grad()
+
+
             loss.backward()
+            #if grad == true
             if self.opt is not None:
                 self.opt.step()
-                self.opt.optimizer.zero_grad()
+
         else:
             if self.opt is not None:
                 self.opt.optimizer.zero_grad()
@@ -100,6 +116,8 @@ def run_epoch(data_iter, model, loss_compute,train=True):
     for i, (sent_batch,tag_batch) in enumerate(data_iter):##
         out = model(sent_batch[0], sent_batch[1],train=train)
         loss = loss_compute(out, tag_batch, sent_batch[0].size()[0],train=train)
+        #out = model(sent_batch[0], sent_batch[1], train=train,round=1)
+        #loss = loss_compute(out, tag_batch, sent_batch[0].size()[0], train=train,grad=true)
         total_loss += loss
         total_sents += sent_batch[0].size()[0]
         sents += sent_batch[0].size()[0]
