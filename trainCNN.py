@@ -32,24 +32,25 @@ class Encoder(nn.Module):
     def forward(self,input,input_len,train=True, round = 0):
         #Normalize dictionary
         x = self.embedding(input)
-        #if round==0
-        x = x.unsqueeze(1)
-        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]
-        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
-        x = torch.cat(x, 1)
-        if train:
-            x = self.dropout(x)
-        logit = self.fc1(x).squeeze(1)
-        #if round==1
-        #x = x + x.grad*epl
-        x = x.unsqueeze(1)
-        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]
-        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
-        x = torch.cat(x, 1)
-        if train:
-            x = self.dropout(x)
-        logit = self.fc1(x).squeeze(1)
-        return logit
+        if round == 0:
+            x = x.unsqueeze(1)
+            x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]
+            x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
+            x = torch.cat(x, 1)
+            if train:
+                x = self.dropout(x)
+            logit = self.fc1(x).squeeze(1)
+            return logit
+        elif round == 1:
+            #x = x + x.grad*epl
+            x = x.unsqueeze(1)
+            x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]
+            x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
+            x = torch.cat(x, 1)
+            if train:
+                x = self.dropout(x)
+            logit = self.fc1(x).squeeze(1)
+            return logit
 
 class NoamOpt:
     "Optim wrapper that implements rate."
