@@ -23,7 +23,7 @@ class Encoder(nn.Module):
     def __init__(self,word_size,voc_counts,voc_totalCount,word_dim,num_filters,filter_sizes,dropout_p=0.0):
         super(Encoder, self).__init__()
         self.embedding = nn.Embedding(word_size,word_dim)
-        self.frec=torch.tensor(voc_counts,dtype=torch.float32,require_grad=False)/voc_totalCount
+        self.frec=torch.tensor(voc_counts,dtype=torch.float32,requires_grad=False)/voc_totalCount
 
         #self.embedding.weight = nn.Parameter(torch.tensor(embedding_matrix, dtype=torch.float32))
         self.embedding.weight.requires_grad = False
