@@ -20,9 +20,11 @@ WARMUP=400
 THERESHHOLD=0.5
 
 class Encoder(nn.Module):
-    def __init__(self,word_size,word_dim,num_filters,filter_sizes,dropout_p=0.0):
+    def __init__(self,word_size,voc_counts,voc_totalCount,word_dim,num_filters,filter_sizes,dropout_p=0.0):
         super(Encoder, self).__init__()
         self.embedding = nn.Embedding(word_size,word_dim)
+        self.frec=torch.tensor(voc_counts,dtype=tprch.float32,require_grad=Flase)/voc_totalCount
+
         #self.embedding.weight = nn.Parameter(torch.tensor(embedding_matrix, dtype=torch.float32))
         self.embedding.weight.requires_grad = False
         self.convs1 = nn.ModuleList([nn.Conv2d(1, num_filters, (K, word_dim)) for K in filter_sizes])
@@ -183,9 +185,9 @@ def run(epoch,model,batch_size,trainData,valData,testData,word_vocab):
 trainSents=readData('data/train_text.txt','data/train_label.txt')
 valSents=readData('data/val_text.txt','data/val_label.txt')
 testSents=readData('data/test_text.txt','data/test_label.txt')
-vocDic=build_vocab(trainSents)
+vocDic,voc_counts,voc_totalCount=build_vocab(trainSents)
 trainData=idData(trainSents,vocDic)
 valData=idData(valSents,vocDic)
 testData=idData(testSents,vocDic)
-encoder=Encoder(len(vocDic),WORD_EMBEDDING_DIM,NUM_FILTERS,FILTER_SIZES,DROUPOUT_RATE).to(device)
+encoder=Encoder(len(vocDic),voc_counts,voc_totalCount,WORD_EMBEDDING_DIM,NUM_FILTERS,FILTER_SIZES,DROUPOUT_RATE).to(device)
 run(EPOCH,encoder,BATCH_SIZE,trainData,valData,testData,vocDic)

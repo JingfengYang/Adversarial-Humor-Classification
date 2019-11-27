@@ -13,12 +13,16 @@ def readData(text_file,label_file):
 def build_vocab(data,min_count=0):
     word_count=Counter()
     word_voc={'PAD':0,'UNK':1}
+    counts=[1,1]
+    totalCount=2
     for sent,label in data:
         word_count.update(sent)
     for word,count in word_count.items():
-        if count>0:
+        if count>min_count:
             word_voc[word]=len(word_voc)
-    return word_voc
+            counts.append(count)
+            totalCount+=counts
+    return word_voc,counts,totalCount
 
 def getWordId(word,voc):
     if word in voc:
