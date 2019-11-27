@@ -21,7 +21,7 @@ def build_vocab(data,min_count=0):
         if count>min_count:
             word_voc[word]=len(word_voc)
             counts.append(count)
-            totalCount+=counts
+            totalCount+=count
     return word_voc,counts,totalCount
 
 def getWordId(word,voc):
