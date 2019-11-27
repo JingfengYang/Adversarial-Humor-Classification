@@ -29,7 +29,7 @@ class Encoder(nn.Module):
         self.dropout = nn.Dropout(dropout_p)
         self.fc1 = nn.Linear(len(filter_sizes) * num_filters, 1)
 
-    def forward(self,input,input_len,train=True):#round=0
+    def forward(self,input,input_len,train=True, round = 0):
         #Normalize dictionary
         x = self.embedding(input)
         #if round==0
@@ -84,7 +84,7 @@ class SimpleLossCompute:
     def __init__(self,  opt=None):
         self.opt = opt
 
-    def __call__(self, x, y, norm,train=True):#grad = false
+    def __call__(self, x, y, norm,train=True, grad = False):
 
         loss = F.binary_cross_entropy(torch.sigmoid(x),y.float())
         if train:
@@ -113,11 +113,11 @@ def run_epoch(data_iter, model, loss_compute,train=True):
     humorTrueTotal = 0
     humorPredTotal = 0
     humorCorrectTotal = 0
-    for i, (sent_batch,tag_batch) in enumerate(data_iter):##
-        out = model(sent_batch[0], sent_batch[1],train=train)
-        loss = loss_compute(out, tag_batch, sent_batch[0].size()[0],train=train)
-        #out = model(sent_batch[0], sent_batch[1], train=train,round=1)
-        #loss = loss_compute(out, tag_batch, sent_batch[0].size()[0], train=train,grad=true)
+    for i, (sent_batch,tag_batch) in enumerate(data_iter):
+        out = model(sent_batch[0], sent_batch[1],train=train, round = 0)
+        loss = loss_compute(out, tag_batch, sent_batch[0].size()[0],train=train, grad = False)
+        out = model(sent_batch[0], sent_batch[1], train=train, round = 1)
+        loss = loss_compute(out, tag_batch, sent_batch[0].size()[0], train=train, grad = True)
         total_loss += loss
         total_sents += sent_batch[0].size()[0]
         sents += sent_batch[0].size()[0]
